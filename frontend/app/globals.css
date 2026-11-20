@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Wear-Tech AdminOps look: purple brand, soft lavender surfaces, teal top accent. Light theme only (v1). */
+@theme {
+  --color-brand: #8250b9;
+  --color-brand-dark: #5b2d91;
+  --color-brand-soft: #ece6fb;
+  --color-brand-faint: #f5f0fc;
+  --color-accent: #0e6b6b;
+  --color-ink: #1a1a2e;
+  --color-muted: #6b6b80;
+  --color-line: #e5e0ee;
+  --color-page: #f7f6fa;
+  /* Borders and tints use ok/warn; text on those tints uses the darker *-ink shades (WCAG AA, 4.5:1). */
+  --color-ok: #1a9e78;
+  --color-ok-ink: #0f7a5c;
+  --color-warn: #d9831f;
+  --color-warn-ink: #965407;
+  --color-bad: #b42323;
+}
+
+@theme inline {
+  --font-sans: var(--font-poppins), system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}

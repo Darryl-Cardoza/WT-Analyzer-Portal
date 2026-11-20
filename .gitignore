@@ -1,0 +1,21 @@
+# Claude Code / AI tooling (local, per-developer)
+.claude/
+.superpowers/
+CLAUDE.md
+frontend/AGENTS.md
+
+# create-next-app boilerplate, not used by the app
+frontend/public/file.svg
+frontend/public/globe.svg
+frontend/public/next.svg
+frontend/public/vercel.svg
+frontend/public/window.svg
+
+# local archives and OS / editor junk
+_archive/
+*.zip
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+claude-plans/
