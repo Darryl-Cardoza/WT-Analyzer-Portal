@@ -95,7 +95,7 @@ describe("DoorSection: recent door alerts table", () => {
   it("shows one row per alert with result, reason, response time, completed time and an Open link", () => {
     show({
       recentDoors: [
-        { id: "a1", startedAt: "2026-11-10T21:00:00Z", door: "Back Door", falsePositive: "Yes", reason: " Door left open ", acknowledgedAt: "2026-11-10T21:02:03Z", completedAt: "2026-11-10T21:10:00Z" },
+        { id: "a1", startedAt: "2026-11-10T21:00:00Z", period: "night", door: "Back Door", falsePositive: "Yes", reason: " Door left open ", acknowledgedAt: "2026-11-10T21:02:03Z", completedAt: "2026-11-10T21:10:00Z" },
         { id: "a2", startedAt: "2026-11-09T21:00:00Z", door: null, falsePositive: "Not Classified", reason: null, acknowledgedAt: null, completedAt: null },
       ],
     });
@@ -103,10 +103,10 @@ describe("DoorSection: recent door alerts table", () => {
     const rows = screen.getAllByRole("row").slice(1);
     expect(rows).toHaveLength(2);
     const first = within(rows[0]).getAllByRole("cell").map((c) => c.textContent);
-    expect(first.slice(0, 6)).toEqual(["Nov 10, 1:00 PM", "Back Door", "False positive", "Door left open", "2m 3s", "Nov 10, 1:10 PM"]);
+    expect(first.slice(0, 7)).toEqual(["Nov 10, 1:00 PM", "Night", "Back Door", "False positive", "Door left open", "2m 3s", "Nov 10, 1:10 PM"]);
     expect(within(rows[0]).getByRole("link", { name: "Open" }).getAttribute("href")).toBe("/alert/?id=a1");
     const second = within(rows[1]).getAllByRole("cell").map((c) => c.textContent);
-    expect(second.slice(0, 6)).toEqual(["Nov 9, 1:00 PM", "—", "Not classified", "—", "—", "—"]);
+    expect(second.slice(0, 7)).toEqual(["Nov 9, 1:00 PM", "—", "—", "Not classified", "—", "—", "—"]);
   });
 
   it("has no pager for up to 15 alerts", () => {

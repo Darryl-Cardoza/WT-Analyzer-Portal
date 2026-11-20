@@ -23,7 +23,7 @@ describe("apiFetch", () => {
   it("sends the token (and no API key), never caches, and returns the JSON", async () => {
     reply(200, { hello: "world" });
     await expect(apiFetch("/x")).resolves.toEqual({ hello: "world" });
-    expect(fetchMock).toHaveBeenCalledWith(`${API_URL}/x`, { headers: { "x-access-token": "tok" }, cache: "no-store" });
+    expect(fetchMock).toHaveBeenCalledWith(`${API_URL}/x`, { headers: { "x-access-token": "tok", "ngrok-skip-browser-warning": "true" }, cache: "no-store" });
   });
 
   it("rejects with a SessionError, without calling the API, when there is no token", async () => {

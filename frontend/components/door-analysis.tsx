@@ -67,7 +67,10 @@ export function DoorSection({ analysis: a, timeZone }: { analysis: DoorAnalysis;
         )}
       </Card>
 
-      <Card title="Door alerts in the last 20 days" aside={`Total: ${recent.length}`}>
+      <Card
+        title="Door alerts in the last 20 days"
+        aside={`Total: ${recent.length}${a.dayNight ? ` · Day: ${a.dayNight.day} · Night: ${a.dayNight.night}` : ""}`}
+      >
         {recent.length === 0 ? (
           <p className="text-sm text-muted">No other door alerts for this resident in the 20 days up to this alert.</p>
         ) : (
@@ -76,7 +79,7 @@ export function DoorSection({ analysis: a, timeZone }: { analysis: DoorAnalysis;
               <table className="w-full min-w-[40rem] text-left text-xs">
                 <thead className="text-muted">
                   <tr>
-                    {["When", "Door", "Result", "Reason", "Response time", "Completed at", ""].map((h) => (
+                    {["When", "Day / Night", "Door", "Result", "Reason", "Response time", "Completed at", ""].map((h) => (
                       <th key={h} scope="col" className="px-3 py-2 font-medium">
                         {h}
                       </th>
@@ -87,6 +90,7 @@ export function DoorSection({ analysis: a, timeZone }: { analysis: DoorAnalysis;
                   {shown.map((d) => (
                     <tr key={d.id} className="border-t border-line">
                       <td className="whitespace-nowrap px-3 py-2.5">{formatDateTime(d.startedAt, timeZone)}</td>
+                      <td className="px-3 py-2.5">{d.period === "day" ? "Day" : d.period === "night" ? "Night" : "—"}</td>
                       <td className="px-3 py-2.5">{d.door ?? "—"}</td>
                       <td className="px-3 py-2.5">{(RESULT[d.falsePositive] ?? RESULT["Not Classified"]).label}</td>
                       <td className="px-3 py-2.5">{d.reason?.trim() || "—"}</td>

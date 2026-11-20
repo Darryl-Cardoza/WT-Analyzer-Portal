@@ -11,6 +11,8 @@ export interface AlertSummary {
   startedAt: string;
   endedAt: string | null;
   isFalsePositive: boolean | null;
+  /** "day" or "night" in the site's time zone and night window; null when the time is unusable. */
+  period?: "day" | "night" | null;
   /** BLE / LTE for Nest (geofence) alerts; null for alert types that have no source. */
   source: "BLE" | "LTE" | "Unknown" | null;
 }
@@ -18,6 +20,8 @@ export interface AlertSummary {
 export interface SearchResponse {
   timeZone: string;
   count: number;
+  /** How many of the alerts started in the site's day / night hours (the site's own night window and time zone). */
+  dayNight?: { day: number; night: number };
   alerts: AlertSummary[];
 }
 
@@ -42,6 +46,8 @@ export interface FallAnalysis {
   isFalsePositive: boolean | null;
   /** The resident's other falls in the 30 days up to this one, newest first. */
   recentFalls?: RecentFall[];
+  /** Of those recent falls, how many started in the site's day / night hours (site time zone + night window). */
+  dayNight?: { day: number; night: number };
   /** Geofences ("nests") assigned to the resident, as polygons; empty when none. */
   nests?: { name: string | null; address: string | null; isActive: boolean | null; points: Coord[] }[];
   /** Sensor packets from just before the alert until the all-zero alertBit packet. */
@@ -95,6 +101,8 @@ export function hdopSignal(hdop: number | null | undefined): { label: string; to
 export interface RecentFall {
   id: string;
   startedAt: string;
+  /** "day" or "night" in the site's time zone and night window; null when the time is unusable. */
+  period?: "day" | "night" | null;
   title: string | null;
   fallKind: "soft" | "hard" | null;
   probability: number | null;
@@ -133,10 +141,14 @@ export interface DoorAnalysis {
   recentDoors?: RecentDoor[];
   /** Door alert counts over the 20 days up to this one (this alert excluded): true positives vs false positive / not classified. */
   doorUsage?: { door: string; truePositive: number; other: number }[];
+  /** Of those recent door alerts, how many started in the site's day / night hours (site time zone + night window). */
+  dayNight?: { day: number; night: number };
 }
 
 export interface RecentDoor {
   id: string;
+  /** "day" or "night" in the site's time zone and night window; null when the time is unusable. */
+  period?: "day" | "night" | null;
   startedAt: string;
   door: string | null;
   falsePositive: "Yes" | "No" | "Not Classified";
@@ -276,8 +288,22 @@ export const one = (value: string | string[] | undefined): string | undefined =>
 /** One value from the page's URL query (see `one`): the first non-blank, trimmed string, or undefined. */
 export const param = (sp: { get(name: string): string | null }, name: string): string | undefined => one(sp.get(name) ?? undefined);
 
-/** Only known type values are accepted from the URL. */
-export const validType = (value: string | undefined) => TYPE_FILTERS.find((f) => f.value === value)?.value;
+/** The type filter is one or more type values, comma separated in the URL ("DOOR_CHANGE,AI_FALL_DETECTION"). */
+export const typeList = (value: string | undefined): string[] => (value ? value.split(",").filter(Boolean) : []);
+
+/** Only known type values are accepted from the URL; the result is those values in chip order, comma separated, or undefined. */
+export const validType = (value: string | undefined) => {
+  const wanted = new Set(typeList(value));
+  const valid = TYPE_FILTERS.filter((f) => wanted.has(f.value)).map((f) => f.value);
+  return valid.length ? valid.join(",") : undefined;
+};
+
+/** The type filter after clicking `clicked`: added if it was off, removed if it was on. undefined (= all types) when none are left. */
+export const toggleType = (current: string | undefined, clicked: string) => {
+  const set = new Set(typeList(current));
+  if (!set.delete(clicked)) set.add(clicked);
+  return validType([...set].join(","));
+};
 
 /** Link to the Alerts page with these filters; blank ones are left out of the URL. */
 export function alertsHref(filters: Filters): string {
@@ -329,9 +355,10 @@ export const validFp = (value: string | undefined) => FALSE_POSITIVE_FILTERS.fin
 /** Type, status, source and false positive are filtered here, so the chips always reflect the whole search result. */
 export function applyFilters(alerts: AlertSummary[], { type, status, source, fp }: Pick<Filters, "type" | "status" | "source" | "fp">) {
   const fpValue = FALSE_POSITIVE_FILTERS.find((f) => f.key === fp)?.value;
+  const types = typeList(type);
   return alerts.filter(
     (a) =>
-      (!type || a.alertType === type) &&
+      (!types.length || types.includes(a.alertType)) &&
       (!status || a.alertStatus === status) &&
       (!source || a.source === source) &&
       (!fp || (a.isFalsePositive ?? null) === fpValue),

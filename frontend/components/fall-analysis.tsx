@@ -213,7 +213,10 @@ export function FallSection({ analysis: a, timeZone }: { analysis: FallAnalysis;
         </Card>
       )}
 
-      <Card title="Falls in the last 30 days" aside={`Total: ${recent.length}`}>
+      <Card
+        title="Falls in the last 30 days"
+        aside={`Total: ${recent.length}${a.dayNight ? ` · Day: ${a.dayNight.day} · Night: ${a.dayNight.night}` : ""}`}
+      >
         {recent.length === 0 ? (
           <p className="text-sm text-muted">No other falls for this resident in the 30 days up to this alert.</p>
         ) : (
@@ -222,7 +225,7 @@ export function FallSection({ analysis: a, timeZone }: { analysis: FallAnalysis;
               <table className="w-full min-w-[40rem] text-left text-xs">
                 <thead className="text-muted">
                   <tr>
-                    {["When", "Type", "Probability", "Outcome", "Reason", "Response time", "Completed at", ""].map((h) => (
+                    {["When", "Day / Night", "Type", "Probability", "Outcome", "Reason", "Response time", "Completed at", ""].map((h) => (
                       <th key={h} scope="col" className="px-3 py-2 font-medium">
                         {h}
                       </th>
@@ -233,6 +236,7 @@ export function FallSection({ analysis: a, timeZone }: { analysis: FallAnalysis;
                   {recent.map((f) => (
                     <tr key={f.id} className="border-t border-line">
                       <td className="whitespace-nowrap px-3 py-2.5">{formatDateTime(f.startedAt, timeZone)}</td>
+                      <td className="px-3 py-2.5">{f.period === "day" ? "Day" : f.period === "night" ? "Night" : "—"}</td>
                       <td className="px-3 py-2.5">{f.fallKind ? humanize(f.fallKind) : "Unknown"}</td>
                       <td className="px-3 py-2.5">{f.probability === null ? "—" : `${f.probability}%`}</td>
                       <td className="px-3 py-2.5">{fallOutcome(f.isFalsePositive).label}</td>

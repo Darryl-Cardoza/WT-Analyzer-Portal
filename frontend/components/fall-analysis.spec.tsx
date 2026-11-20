@@ -232,7 +232,7 @@ describe("FallSection: falls in the last 30 days", () => {
   it("lists type, probability, outcome, reason (false positives only), times and an Open link", () => {
     show({
       recentFalls: [
-        { id: "f1", startedAt: "2026-11-01T20:00:00Z", title: null, fallKind: "hard", probability: 95, isFalsePositive: true, reason: " Sat down hard ", acknowledgedAt: "2026-11-01T20:01:00Z", completedAt: "2026-11-01T20:05:00Z", location: loc },
+        { id: "f1", startedAt: "2026-11-01T20:00:00Z", period: "day", title: null, fallKind: "hard", probability: 95, isFalsePositive: true, reason: " Sat down hard ", acknowledgedAt: "2026-11-01T20:01:00Z", completedAt: "2026-11-01T20:05:00Z", location: loc },
         { id: "f2", startedAt: "2026-11-02T20:00:00Z", title: null, fallKind: null, probability: null, isFalsePositive: false, reason: "ignored", acknowledgedAt: null, completedAt: null, location: null },
         { id: "f3", startedAt: "2026-11-03T20:00:00Z", title: null, fallKind: "soft", probability: 80, isFalsePositive: null, reason: null, acknowledgedAt: null, completedAt: null, location: loc },
       ],
@@ -241,9 +241,9 @@ describe("FallSection: falls in the last 30 days", () => {
     const table = screen.getByRole("heading", { name: "Falls in the last 30 days" }).closest("section")!;
     const rows = within(table).getAllByRole("row").slice(1);
     const cells = (r: HTMLElement) => within(r).getAllByRole("cell").map((c) => c.textContent);
-    expect(cells(rows[0]).slice(0, 7)).toEqual(["Nov 1, 12:00 PM", "Hard", "95%", "False positive", "Sat down hard", "1m 0s", "Nov 1, 12:05 PM"]);
-    expect(cells(rows[1]).slice(0, 7)).toEqual(["Nov 2, 12:00 PM", "Unknown", "—", "True fall", "—", "—", "—"]);
-    expect(cells(rows[2])[3]).toBe("Not acknowledged");
+    expect(cells(rows[0]).slice(0, 8)).toEqual(["Nov 1, 12:00 PM", "Day", "Hard", "95%", "False positive", "Sat down hard", "1m 0s", "Nov 1, 12:05 PM"]);
+    expect(cells(rows[1]).slice(0, 8)).toEqual(["Nov 2, 12:00 PM", "—", "Unknown", "—", "True fall", "—", "—", "—"]);
+    expect(cells(rows[2])[4]).toBe("Not acknowledged");
     expect(within(rows[0]).getByRole("link", { name: "Open" }).getAttribute("href")).toBe("/alert/?id=f1");
     expect(screen.getByText(/Falls without a GPS position are listed but not plotted/)).toBeTruthy();
   });

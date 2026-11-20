@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   alertsHref,
+  toggleType,
   applyFilters,
   searchRange,
   backHref,
@@ -259,5 +260,21 @@ describe("param", () => {
   });
   it("detailHref puts the id in the query, encoded, so any id is safe", () => {
     expect(detailHref("a/b c?d", {})).toBe("/alert/?id=a%2Fb%20c%3Fd");
+  });
+});
+
+describe("selecting several alert types", () => {
+  const mk = (alertType: string) => ({ alertType, alertStatus: "X", isFalsePositive: null, source: null }) as never;
+  it("toggleType adds and removes types, in chip order, and clears to undefined", () => {
+    expect(toggleType(undefined, "AI_FALL_DETECTION")).toBe("AI_FALL_DETECTION");
+    expect(toggleType("AI_FALL_DETECTION", "DOOR_CHANGE")).toBe("DOOR_CHANGE,AI_FALL_DETECTION");
+    expect(toggleType("DOOR_CHANGE,AI_FALL_DETECTION", "DOOR_CHANGE")).toBe("AI_FALL_DETECTION");
+    expect(toggleType("DOOR_CHANGE", "DOOR_CHANGE")).toBeUndefined();
+  });
+  it("validType drops unknown values and applyFilters keeps every selected type", () => {
+    expect(validType("BOGUS,GEOFENCE")).toBe("GEOFENCE");
+    expect(validType("BOGUS")).toBeUndefined();
+    const list = [mk("DOOR_CHANGE"), mk("GEOFENCE"), mk("AI_FALL_DETECTION")];
+    expect(applyFilters(list, { type: "DOOR_CHANGE,AI_FALL_DETECTION" }).map((a) => a.alertType)).toEqual(["DOOR_CHANGE", "AI_FALL_DETECTION"]);
   });
 });

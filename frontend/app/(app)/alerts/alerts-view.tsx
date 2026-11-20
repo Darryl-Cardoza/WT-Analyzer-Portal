@@ -18,6 +18,8 @@ import {
   searchRange,
   sourceOptions,
   statusOptions,
+  toggleType,
+  typeList,
   validFp,
   validSource,
   validType,
@@ -131,12 +133,25 @@ function AlertsResults({ me }: { me: Me }) {
           </p>
 
           {all.length > 0 && (
+            <div className="mt-3 flex gap-3 text-sm">
+              {/* Counted from the filtered list, so they follow the Type / Status / ... chips. */}
+              <span className="rounded-lg border border-line bg-white px-3 py-1.5">
+                Day <span className="ml-1 font-semibold text-ink">{shown.filter((a) => a.period === "day").length}</span>
+              </span>
+              <span className="rounded-lg border border-line bg-white px-3 py-1.5">
+                Night <span className="ml-1 font-semibold text-ink">{shown.filter((a) => a.period === "night").length}</span>
+              </span>
+            </div>
+          )}
+
+          {all.length > 0 && (
             <div className="mt-4 space-y-3">
               <ChipRow
                 label="Type"
                 chips={[
                   { label: "All Types", href: href({ type: undefined }), active: !type },
-                  ...TYPE_FILTERS.map((f) => ({ label: f.label, href: href({ type: f.value }), active: type === f.value })),
+                  // Several types can be on at once: a click adds or removes that type.
+                  ...TYPE_FILTERS.map((f) => ({ label: f.label, href: href({ type: toggleType(type, f.value) }), active: typeList(type).includes(f.value) })),
                 ]}
               />
               <ChipRow

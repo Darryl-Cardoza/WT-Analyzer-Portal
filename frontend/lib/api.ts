@@ -28,7 +28,7 @@ export async function apiFetch<T>(path: string): Promise<T> {
   if (!token) throw new SessionError();
 
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { "x-access-token": token },
+    headers: { "x-access-token": token, "ngrok-skip-browser-warning": "true" }, // ngrok header: dev tunnel only, harmless elsewhere
     cache: "no-store",
   });
   if (res.status === 401 || res.status === 403) {
