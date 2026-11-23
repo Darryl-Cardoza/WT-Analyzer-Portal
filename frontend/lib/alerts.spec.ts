@@ -108,8 +108,9 @@ describe("filtering", () => {
     expect(applyFilters(list, { type: "GEOFENCE", status: "AUTO_ACKNOWLEDGED" })).toEqual([]);
   });
   it("lists each status present once, sorted", () => {
-    expect(statusOptions(list)).toEqual(["AUTO_ACKNOWLEDGED", "RESOLVED"]);
-    expect(statusOptions([])).toEqual([]);
+    // Known statuses are always listed (the view dims the absent ones); any other status present is added.
+    expect(statusOptions(list)).toEqual(["AUTO_ACKNOWLEDGED", "RESOLVED", "UNATTENDED"]);
+    expect(statusOptions([alert({ alertStatus: "OTHER" })])).toEqual(["AUTO_ACKNOWLEDGED", "OTHER", "RESOLVED", "UNATTENDED"]);
   });
 });
 
@@ -195,11 +196,11 @@ describe("source and false positive filters", () => {
     expect(applyFilters(list, { type: "DOOR_CHANGE", source: "LTE" })).toEqual([]);
   });
 
-  it("builds chips only from what is present, in a fixed order", () => {
+  it("lists every false-positive outcome in a fixed order and flags the absent ones", () => {
     expect(sourceOptions(list)).toEqual(["BLE", "LTE", "Unknown"]);
     expect(sourceOptions([alert({ alertType: "DOOR_CHANGE", source: null })])).toEqual([]); // no Nest alerts: no Source row
     expect(falsePositiveOptions(list).map((f) => f.key)).toEqual(["yes", "no", "none"]);
-    expect(falsePositiveOptions([alert({ isFalsePositive: false })]).map((f) => f.key)).toEqual(["no"]);
+    expect(falsePositiveOptions([alert({ isFalsePositive: false })]).filter((f) => f.present).map((f) => f.key)).toEqual(["no"]);
   });
 
   it("accepts only known values from the URL", () => {
