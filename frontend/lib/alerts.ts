@@ -321,6 +321,13 @@ export const toggleType = (current: string | undefined, clicked: string) => {
   return validType([...set].join(","));
 };
 
+/** Status, source and false-positive filters are lists too (comma separated in the URL). Adds `clicked` if it was off, removes it if on; undefined when none are left. */
+export const toggleValue = (current: string | undefined, clicked: string) => {
+  const set = new Set(typeList(current));
+  if (!set.delete(clicked)) set.add(clicked);
+  return set.size ? [...set].join(",") : undefined;
+};
+
 /** Link to the Alerts page with these filters; blank ones are left out of the URL. */
 export function alertsHref(filters: Filters): string {
   const params = new URLSearchParams();
@@ -365,25 +372,38 @@ export const FALSE_POSITIVE_FILTERS = [
 ] as const;
 
 /** Only known values are accepted from the URL. */
-export const validSource = (value: string | undefined) => SOURCES.find((s) => s === value);
-export const validFp = (value: string | undefined) => FALSE_POSITIVE_FILTERS.find((f) => f.key === value)?.key;
+export const validSource = (value: string | undefined) => {
+  const wanted = new Set(typeList(value));
+  const valid = SOURCES.filter((s) => wanted.has(s));
+  return valid.length ? valid.join(",") : undefined;
+};
+export const validFp = (value: string | undefined) => {
+  const wanted = new Set(typeList(value));
+  const valid = FALSE_POSITIVE_FILTERS.filter((f) => wanted.has(f.key)).map((f) => f.key);
+  return valid.length ? valid.join(",") : undefined;
+};
 
 /** Type, status, source and false positive are filtered here, so the chips always reflect the whole search result. */
 export function applyFilters(alerts: AlertSummary[], { type, status, source, fp }: Pick<Filters, "type" | "status" | "source" | "fp">) {
-  const fpValue = FALSE_POSITIVE_FILTERS.find((f) => f.key === fp)?.value;
+  // Each filter is a list: an alert passes a filter when it matches any selected value, and must pass every filter.
   const types = typeList(type);
+  const statuses = typeList(status);
+  const sources = typeList(source);
+  const fpValues = typeList(fp).map((k) => FALSE_POSITIVE_FILTERS.find((f) => f.key === k)?.value);
   return alerts.filter(
     (a) =>
       (!types.length || types.includes(a.alertType)) &&
-      (!status || a.alertStatus === status) &&
-      (!source || a.source === source) &&
-      (!fp || (a.isFalsePositive ?? null) === fpValue),
+      (!statuses.length || statuses.includes(a.alertStatus)) &&
+      (!sources.length || sources.includes(a.source as string)) &&
+      (!fpValues.length || fpValues.includes(a.isFalsePositive ?? null)),
   );
 }
 
 /** Status chips come from the statuses actually present, so no status values are hard-coded. */
+export const KNOWN_STATUSES = ["AUTO_ACKNOWLEDGED", "RESOLVED"];
+/** Known statuses plus any other present; the caller dims the ones with no alerts. */
 export function statusOptions(alerts: AlertSummary[]): string[] {
-  return [...new Set(alerts.map((a) => a.alertStatus).filter(Boolean))].sort();
+  return [...new Set([...KNOWN_STATUSES, ...alerts.map((a) => a.alertStatus).filter(Boolean)])].sort();
 }
 
 /** Source chips: only the sources present (Nest alerts only), in a fixed order. Empty when there are no Nest alerts. */
@@ -391,9 +411,9 @@ export function sourceOptions(alerts: AlertSummary[]) {
   return SOURCES.filter((s) => alerts.some((a) => a.source === s));
 }
 
-/** False Positive chips: only the outcomes present, in a fixed order. */
+/** False Positive chips: every outcome in a fixed order; `present` is false when no alert has it (shown dimmed). */
 export function falsePositiveOptions(alerts: AlertSummary[]) {
-  return FALSE_POSITIVE_FILTERS.filter((f) => alerts.some((a) => (a.isFalsePositive ?? null) === f.value));
+  return FALSE_POSITIVE_FILTERS.map((f) => ({ ...f, present: alerts.some((a) => (a.isFalsePositive ?? null) === f.value) }));
 }
 
 /**

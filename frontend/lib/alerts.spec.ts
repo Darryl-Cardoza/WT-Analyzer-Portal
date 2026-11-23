@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   alertsHref,
   toggleType,
+  toggleValue,
   applyFilters,
   searchRange,
   backHref,
@@ -276,5 +277,28 @@ describe("selecting several alert types", () => {
     expect(validType("BOGUS")).toBeUndefined();
     const list = [mk("DOOR_CHANGE"), mk("GEOFENCE"), mk("AI_FALL_DETECTION")];
     expect(applyFilters(list, { type: "DOOR_CHANGE,AI_FALL_DETECTION" }).map((a) => a.alertType)).toEqual(["DOOR_CHANGE", "AI_FALL_DETECTION"]);
+  });
+});
+
+describe("selecting several statuses, sources and false-positive outcomes", () => {
+  const mk = (alertStatus: string, source: string | null, isFalsePositive: boolean | null) => ({ alertType: "GEOFENCE", alertStatus, source, isFalsePositive }) as never;
+  const list = [mk("RESOLVED", "BLE", true), mk("AUTO_ACKNOWLEDGED", "LTE", false), mk("UNATTENDED", null, null)];
+  it("toggleValue adds and removes, and clears to undefined", () => {
+    expect(toggleValue(undefined, "BLE")).toBe("BLE");
+    expect(toggleValue("BLE", "LTE")).toBe("BLE,LTE");
+    expect(toggleValue("BLE,LTE", "BLE")).toBe("LTE");
+    expect(toggleValue("LTE", "LTE")).toBeUndefined();
+  });
+  it("validSource / validFp keep only known values", () => {
+    expect(validSource("LTE,BOGUS,BLE")).toBe("BLE,LTE");
+    expect(validFp("no,BOGUS,yes")).toBe("yes,no");
+    expect(validFp("BOGUS")).toBeUndefined();
+  });
+  it("applyFilters matches any selected value within a filter", () => {
+    const f = (o: object) => applyFilters(list, o).map((a) => a.alertStatus);
+    expect(f({ status: "RESOLVED,UNATTENDED" })).toEqual(["RESOLVED", "UNATTENDED"]);
+    expect(f({ source: "BLE,LTE" })).toEqual(["RESOLVED", "AUTO_ACKNOWLEDGED"]);
+    expect(f({ fp: "yes,none" })).toEqual(["RESOLVED", "UNATTENDED"]);
+    expect(f({ status: "RESOLVED,UNATTENDED", fp: "none" })).toEqual(["UNATTENDED"]);
   });
 });

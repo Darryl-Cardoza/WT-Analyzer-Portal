@@ -16,9 +16,11 @@ import {
   humanize,
   param,
   searchRange,
+  SOURCES,
   sourceOptions,
   statusOptions,
   toggleType,
+  toggleValue,
   typeList,
   validFp,
   validSource,
@@ -158,16 +160,16 @@ function AlertsResults({ me }: { me: Me }) {
                 label="Status"
                 chips={[
                   { label: "All", href: href({ status: undefined }), active: !status },
-                  ...statusOptions(all).map((s) => ({ label: humanize(s), href: href({ status: s }), active: status === s })),
+                  ...statusOptions(all).map((s) => ({ label: humanize(s), href: href({ status: toggleValue(status, s) }), active: typeList(status).includes(s), disabled: !all.some((a) => a.alertStatus === s) })),
                 ]}
               />
               {/* Only Nest alerts have a source, so this row appears only when the result has some. */}
-              {sourceOptions(all).length > 0 && (
+              {all.some((a) => a.alertType === "GEOFENCE") && (
                 <ChipRow
                   label="Source"
                   chips={[
                     { label: "All", href: href({ source: undefined }), active: !source },
-                    ...sourceOptions(all).map((s) => ({ label: s, href: href({ source: s }), active: source === s })),
+                    ...SOURCES.filter((s) => s !== "Unknown" || sourceOptions(all).includes(s)).map((s) => ({ label: s, href: href({ source: toggleValue(source, s) }), active: typeList(source).includes(s), disabled: !sourceOptions(all).includes(s) })),
                   ]}
                 />
               )}
@@ -175,7 +177,7 @@ function AlertsResults({ me }: { me: Me }) {
                 label="False Positive"
                 chips={[
                   { label: "All", href: href({ fp: undefined }), active: !fp },
-                  ...falsePositiveOptions(all).map((f) => ({ label: f.label, href: href({ fp: f.key }), active: fp === f.key })),
+                  ...falsePositiveOptions(all).map((f) => ({ label: f.label, href: href({ fp: toggleValue(fp, f.key) }), active: typeList(fp).includes(f.key), disabled: !f.present })),
                 ]}
               />
             </div>
