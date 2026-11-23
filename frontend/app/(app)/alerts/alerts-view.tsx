@@ -125,7 +125,7 @@ function AlertsResults({ me }: { me: Me }) {
       {result && (
         <>
           <p className="mt-5 text-sm text-muted">
-            <span className="font-semibold text-ink">{all.length}</span> alert{all.length === 1 ? "" : "s"} {range ? "from" : "on"}{" "}
+            Total <span className="font-semibold text-ink">{all.length}</span> alert{all.length === 1 ? "" : "s"} {range ? "from" : "on"}{" "}
             {range
               ? `${formatDay(search.date)}${search.time ? ` ${search.time}` : ""} to ${formatDay(search.toDate!)}${search.toTime ? ` ${search.toTime}` : ""}`
               : `${formatDay(search.date)}${search.time ? ` around ${search.time}` : ""}`}

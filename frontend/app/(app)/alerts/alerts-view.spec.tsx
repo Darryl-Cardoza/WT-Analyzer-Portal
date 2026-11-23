@@ -107,20 +107,20 @@ describe("AlertsView: result summary", () => {
   it("counts the alerts for a day, singular and plural", async () => {
     vi.mocked(searchAlerts).mockResolvedValue(reply([alert(1)]));
     const { unmount } = await view();
-    expect(screen.getByText(/alert on/).textContent).toBe("1 alert on Nov 11, 2026");
+    expect(screen.getByText(/alert on/).textContent).toBe("Total 1 alert on Nov 11, 2026");
     unmount();
     vi.mocked(searchAlerts).mockResolvedValue(reply([alert(1), alert(2)]));
     await view();
-    expect(screen.getByText(/alerts on/).textContent).toBe("2 alerts on Nov 11, 2026");
+    expect(screen.getByText(/alerts on/).textContent).toBe("Total 2 alerts on Nov 11, 2026");
   });
 
   it("mentions the time window, the resident and a range", async () => {
     vi.mocked(searchAlerts).mockResolvedValue(reply([alert(1)]));
     const { unmount } = await view({ time: "13:00", email: "r@site.org" });
-    expect(screen.getByText(/alert on/).textContent).toBe("1 alert on Nov 11, 2026 around 13:00 for r@site.org");
+    expect(screen.getByText(/alert on/).textContent).toBe("Total 1 alert on Nov 11, 2026 around 13:00 for r@site.org");
     unmount();
     await view({ date: "2026-11-11", time: "09:00", toDate: "2026-11-12", toTime: "17:00" });
-    expect(screen.getByText(/alert from/).textContent).toBe("1 alert from Nov 11, 2026 09:00 to Nov 12, 2026 17:00");
+    expect(screen.getByText(/alert from/).textContent).toBe("Total 1 alert from Nov 11, 2026 09:00 to Nov 12, 2026 17:00");
   });
 
   it("says search times and results are in UTC when UTC is chosen", async () => {

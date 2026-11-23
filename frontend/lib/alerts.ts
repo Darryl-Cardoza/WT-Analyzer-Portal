@@ -212,6 +212,22 @@ export interface GeofenceAnalysis {
   sensorDocumentIds: string[];
   isFalsePositive: boolean | null;
   notes: string[];
+  /** The resident's other Nest alerts in the 20 days up to this one, newest first. */
+  recentGeofences?: RecentGeofence[];
+  /** Of those recent Nest alerts, how many started in the site's day / night hours (site time zone + night window). */
+  dayNight?: { day: number; night: number };
+}
+
+export interface RecentGeofence {
+  id: string;
+  /** "day" or "night" in the site's time zone and night window; null when the time is unusable. */
+  period?: "day" | "night" | null;
+  startedAt: string;
+  source: "BLE" | "LTE" | "Unknown" | null;
+  falsePositive: "Yes" | "No" | "Not Classified";
+  reason: string | null;
+  acknowledgedAt: string | null;
+  completedAt: string | null;
 }
 
 export type Analysis = FallAnalysis | DoorAnalysis | GeofenceAnalysis | null;

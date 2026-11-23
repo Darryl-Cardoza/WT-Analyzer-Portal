@@ -1,13 +1,18 @@
+import Link from "next/link";
 import { Card, CoordLink, Facts, Stat } from "@/components/detail";
 import { PathMap, type MapMarker } from "@/components/path-map";
-import { hdopSignal, type GeofenceAnalysis, type GpsFix } from "@/lib/alerts";
-import { formatAge, formatDateTime, formatMeters, formatOffset } from "@/lib/format";
+import { detailHref, hdopSignal, type GeofenceAnalysis, type GpsFix } from "@/lib/alerts";
+import { formatAge, formatDateTime, formatDuration, formatMeters, formatOffset } from "@/lib/format";
 import { buildPath } from "@/lib/path";
+
+// "True or false" for a Nest alert is the false-positive flag: Yes = false positive, No = true positive.
+const RESULT_LABEL = { Yes: "False positive", No: "True positive", "Not Classified": "Not classified" } as const;
 
 const dash = <span className="text-muted">—</span>;
 const orDash = (value: number | null) => (value === null ? dash : value);
 
 export function GeofenceSection({ analysis: a, timeZone }: { analysis: GeofenceAnalysis; timeZone: string }) {
+  const recent = a.recentGeofences ?? [];
   const source = a.alertSource;
   const trigger = source.trigger;
   const signal = hdopSignal(a.alertHdop);
@@ -143,6 +148,47 @@ export function GeofenceSection({ analysis: a, timeZone }: { analysis: GeofenceA
               last fix until it gets a new one); for “During” only those inside the alert window are counted.
             </p>
           </>
+        )}
+      </Card>
+
+      <Card
+        title="Nest alerts in the last 20 days"
+        aside={`Total: ${recent.length}${a.dayNight ? ` · Day: ${a.dayNight.day} · Night: ${a.dayNight.night}` : ""}`}
+      >
+        {recent.length === 0 ? (
+          <p className="text-sm text-muted">No other Nest alerts for this resident in the 20 days up to this alert.</p>
+        ) : (
+          <div className="max-h-96 overflow-auto">
+            <table className="w-full min-w-[40rem] text-left text-xs">
+              <thead className="text-muted">
+                <tr>
+                  {["When", "Day / Night", "Source", "Result", "Reason", "Response time", "Completed at", ""].map((h) => (
+                    <th key={h} scope="col" className="px-3 py-2 font-medium">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {recent.map((g) => (
+                  <tr key={g.id} className="border-t border-line">
+                    <td className="whitespace-nowrap px-3 py-2.5">{formatDateTime(g.startedAt, timeZone)}</td>
+                    <td className="px-3 py-2.5">{g.period === "day" ? "Day" : g.period === "night" ? "Night" : "—"}</td>
+                    <td className="px-3 py-2.5">{g.source ?? "—"}</td>
+                    <td className="px-3 py-2.5">{RESULT_LABEL[g.falsePositive] ?? "Not classified"}</td>
+                    <td className="px-3 py-2.5">{g.reason?.trim() || "—"}</td>
+                    <td className="whitespace-nowrap px-3 py-2.5">{formatDuration(g.startedAt, g.acknowledgedAt) ?? "—"}</td>
+                    <td className="whitespace-nowrap px-3 py-2.5">{g.completedAt ? formatDateTime(g.completedAt, timeZone) : "—"}</td>
+                    <td className="px-3 py-2.5">
+                      <Link href={detailHref(g.id, {})} className="font-medium text-brand-dark hover:underline">
+                        Open
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 
