@@ -11,7 +11,7 @@ const RESULT_LABEL = { Yes: "False positive", No: "True positive", "Not Classifi
 const dash = <span className="text-muted">—</span>;
 const orDash = (value: number | null) => (value === null ? dash : value);
 
-export function GeofenceSection({ analysis: a, timeZone }: { analysis: GeofenceAnalysis; timeZone: string }) {
+export function GeofenceSection({ analysis: a, timeZone, month }: { analysis: GeofenceAnalysis; timeZone: string; month: string }) {
   const recent = a.recentGeofences ?? [];
   const source = a.alertSource;
   const trigger = source.trigger;
@@ -152,11 +152,11 @@ export function GeofenceSection({ analysis: a, timeZone }: { analysis: GeofenceA
       </Card>
 
       <Card
-        title="Nest alerts in the last 20 days"
+        title={`Nest alerts in ${month}`}
         aside={`Total: ${recent.length}${a.dayNight ? ` · Day: ${a.dayNight.day} · Night: ${a.dayNight.night}` : ""}`}
       >
         {recent.length === 0 ? (
-          <p className="text-sm text-muted">No other Nest alerts for this resident in the 20 days up to this alert.</p>
+          <p className="text-sm text-muted">No other Nest alerts for this resident in {month}.</p>
         ) : (
           <div className="max-h-96 overflow-auto">
             <table className="w-full min-w-[40rem] text-left text-xs">

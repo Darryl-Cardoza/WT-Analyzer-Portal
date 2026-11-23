@@ -16,7 +16,7 @@ const RESULT = {
   "Not Classified": { label: "Not classified", tone: "neutral" },
 } as const;
 
-export function DoorSection({ analysis: a, timeZone }: { analysis: DoorAnalysis; timeZone: string }) {
+export function DoorSection({ analysis: a, timeZone, month }: { analysis: DoorAnalysis; timeZone: string; month: string }) {
   const result = RESULT[a.falsePositive] ?? RESULT["Not Classified"];
   const recent = a.recentDoors ?? [];
   const [side, setSide] = useState<"truePositive" | "other">("truePositive");
@@ -44,7 +44,7 @@ export function DoorSection({ analysis: a, timeZone }: { analysis: DoorAnalysis;
         />
       </Card>
 
-      <Card title="Doors used (last 20 days)">
+      <Card title={`Doors used in ${month}`}>
         <div className="mb-4 inline-flex rounded-full border border-line bg-white p-0.5 text-xs font-medium" role="group" aria-label="Alert result">
           {([["truePositive", "True positive"], ["other", "False positive / Not classified"]] as const).map(([k, label]) => (
             <button key={k} type="button" aria-pressed={side === k} onClick={() => setSide(k)} className={`rounded-full px-3 py-1 ${side === k ? "bg-brand-faint text-brand-dark" : "text-ink/70 hover:bg-brand-faint"}`}>
@@ -53,7 +53,7 @@ export function DoorSection({ analysis: a, timeZone }: { analysis: DoorAnalysis;
           ))}
         </div>
         {usage.length === 0 ? (
-          <p className="text-sm text-muted">No other door alerts for this resident in the 20 days up to this alert.</p>
+          <p className="text-sm text-muted">No other door alerts for this resident in {month}.</p>
         ) : (
           <div className="flex h-56 items-end gap-3 overflow-x-auto pb-1" role="img" aria-label="Door alerts per door">
             {usage.map((u) => (
@@ -68,11 +68,11 @@ export function DoorSection({ analysis: a, timeZone }: { analysis: DoorAnalysis;
       </Card>
 
       <Card
-        title="Door alerts in the last 20 days"
+        title={`Door alerts in ${month}`}
         aside={`Total: ${recent.length}${a.dayNight ? ` · Day: ${a.dayNight.day} · Night: ${a.dayNight.night}` : ""}`}
       >
         {recent.length === 0 ? (
-          <p className="text-sm text-muted">No other door alerts for this resident in the 20 days up to this alert.</p>
+          <p className="text-sm text-muted">No other door alerts for this resident in {month}.</p>
         ) : (
           <>
             <div className="overflow-x-auto">

@@ -5,6 +5,7 @@ import {
   formatDay,
   formatDuration,
   formatMeters,
+  formatMonth,
   formatOffset,
   formatSeconds,
   todayIn,
@@ -106,5 +107,14 @@ describe("formatDay", () => {
   it("formats a calendar date without shifting it by a time zone", () => {
     expect(formatDay("2026-11-12")).toBe("Nov 12, 2026");
     expect(formatDay("2026-01-01")).toBe("Jan 1, 2026");
+  });
+});
+
+describe("formatMonth", () => {
+  it("names the calendar month in the given zone", () => {
+    expect(formatMonth("2026-11-11T21:24:00Z", "America/Los_Angeles")).toBe("November 2026");
+    // 04:00Z on 1 Dec is still 30 Nov in Los Angeles
+    expect(formatMonth("2026-12-01T04:00:00Z", "America/Los_Angeles")).toBe("November 2026");
+    expect(formatMonth("2026-12-01T04:00:00Z", "UTC")).toBe("December 2026");
   });
 });

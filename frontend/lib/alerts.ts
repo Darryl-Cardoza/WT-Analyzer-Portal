@@ -44,7 +44,7 @@ export interface FallAnalysis {
   baseLocation: Coord | null;
   distanceFromBaseMeters: number | null;
   isFalsePositive: boolean | null;
-  /** The resident's other falls in the 30 days up to this one, newest first. */
+  /** The resident's other falls in the calendar month of this one (site time zone), newest first. */
   recentFalls?: RecentFall[];
   /** Of those recent falls, how many started in the site's day / night hours (site time zone + night window). */
   dayNight?: { day: number; night: number };
@@ -137,9 +137,9 @@ export interface DoorAnalysis {
   time: string | null;
   falsePositive: "Yes" | "No" | "Not Classified";
   alertBit: string | null;
-  /** The resident's other door alerts in the 20 days up to this one, newest first. */
+  /** The resident's other door alerts in the calendar month of this one, newest first. */
   recentDoors?: RecentDoor[];
-  /** Door alert counts over the 20 days up to this one (this alert excluded): true positives vs false positive / not classified. */
+  /** Door alert counts over that month (this alert excluded): true positives vs false positive / not classified. */
   doorUsage?: { door: string; truePositive: number; other: number }[];
   /** Of those recent door alerts, how many started in the site's day / night hours (site time zone + night window). */
   dayNight?: { day: number; night: number };
@@ -212,7 +212,7 @@ export interface GeofenceAnalysis {
   sensorDocumentIds: string[];
   isFalsePositive: boolean | null;
   notes: string[];
-  /** The resident's other Nest alerts in the 20 days up to this one, newest first. */
+  /** The resident's other Nest alerts in the calendar month of this one, newest first. */
   recentGeofences?: RecentGeofence[];
   /** Of those recent Nest alerts, how many started in the site's day / night hours (site time zone + night window). */
   dayNight?: { day: number; night: number };
