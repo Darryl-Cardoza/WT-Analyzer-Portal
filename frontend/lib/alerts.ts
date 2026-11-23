@@ -400,7 +400,7 @@ export function applyFilters(alerts: AlertSummary[], { type, status, source, fp 
 }
 
 /** Status chips come from the statuses actually present, so no status values are hard-coded. */
-export const KNOWN_STATUSES = ["AUTO_ACKNOWLEDGED", "RESOLVED"];
+export const KNOWN_STATUSES = ["AUTO_ACKNOWLEDGED", "RESOLVED", "UNATTENDED"];
 /** Known statuses plus any other present; the caller dims the ones with no alerts. */
 export function statusOptions(alerts: AlertSummary[]): string[] {
   return [...new Set([...KNOWN_STATUSES, ...alerts.map((a) => a.alertStatus).filter(Boolean)])].sort();
