@@ -10,7 +10,7 @@ import { GeofenceSection } from "@/components/geofence-analysis";
 import { NotFoundPanel } from "@/components/not-found-panel";
 import { ApiError, getAlert } from "@/lib/api";
 import { backHref, param } from "@/lib/alerts";
-import { formatDateTime, formatDuration } from "@/lib/format";
+import { formatDateTime, formatDuration, formatMonth } from "@/lib/format";
 import { displayZone } from "@/lib/timezone";
 import { useApi } from "@/lib/use-api";
 import { useZoneChoice } from "@/lib/zone-pref";
@@ -37,6 +37,7 @@ export function AlertDetailView() {
 
   const { alert, resident, analysis } = data;
   const timeZone = displayZone(choice, data.timeZone);
+  const month = formatMonth(alert.startedAt, data.timeZone); // the cards cover the alert's month in the SITE zone, whatever zone is displayed
   const duration = formatDuration(alert.startedAt, alert.endedAt);
   const ack = alert.acknowledgment;
 
@@ -81,9 +82,9 @@ export function AlertDetailView() {
       </header>
 
       <div className="mt-5 space-y-5">
-        {analysis?.type === "FALL" && <FallSection analysis={analysis} timeZone={timeZone} />}
-        {analysis?.type === "DOOR" && <DoorSection analysis={analysis} timeZone={timeZone} />}
-        {analysis?.type === "GEOFENCE" && <GeofenceSection analysis={analysis} timeZone={timeZone} />}
+        {analysis?.type === "FALL" && <FallSection analysis={analysis} timeZone={timeZone} month={month} />}
+        {analysis?.type === "DOOR" && <DoorSection analysis={analysis} timeZone={timeZone} month={month} />}
+        {analysis?.type === "GEOFENCE" && <GeofenceSection analysis={analysis} timeZone={timeZone} month={month} />}
         {!analysis && (
           <Card title="Analysis">
             <Note>No detailed analysis is available for this alert type.</Note>

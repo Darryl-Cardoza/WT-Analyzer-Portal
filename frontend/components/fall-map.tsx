@@ -165,7 +165,7 @@ export function FallMap({ pins, nests = [] }: { pins: FallPin[]; nests?: Nest[] 
         </div>
       )}
       <div className="relative h-80 overflow-hidden rounded-lg border border-line bg-page sm:h-96">
-        <div ref={el} className="h-full w-full" role="region" aria-label="Map of this fall and the resident's falls in the last 30 days" />
+        <div ref={el} className="h-full w-full" role="region" aria-label="Map of this fall and the resident's falls in the same month" />
         {state !== "ready" && (
           <p className="absolute inset-0 grid place-items-center bg-page px-6 text-center text-sm text-muted" role={state === "error" ? "alert" : "status"}>
             {state === "loading" ? "Loading map…" : KEY ? "The map could not be loaded. The coordinates above and the list below have the same positions." : "The map is not set up (no Google Maps key)."}

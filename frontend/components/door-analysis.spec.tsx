@@ -27,7 +27,7 @@ const recent = (n: number, over: Partial<RecentDoor> = {}): RecentDoor[] =>
     completedAt: null,
     ...over,
   }));
-const show = (over: Partial<DoorAnalysis> = {}) => render(<DoorSection analysis={{ ...base, ...over }} timeZone={TZ} />);
+const show = (over: Partial<DoorAnalysis> = {}) => render(<DoorSection analysis={{ ...base, ...over }} timeZone={TZ} month="November 2026" />);
 
 describe("DoorSection: this alert", () => {
   it.each([

@@ -21,7 +21,7 @@ function whyNoVerdict(a: FallAnalysis): string {
   return `The site has no ${a.fallKind} fall threshold for ${a.residentRisk} risk residents.`;
 }
 
-export function FallSection({ analysis: a, timeZone }: { analysis: FallAnalysis; timeZone: string }) {
+export function FallSection({ analysis: a, timeZone, month }: { analysis: FallAnalysis; timeZone: string; month: string }) {
   const kind = a.fallKind ? `${humanize(a.fallKind)} fall` : "Fall";
   const verdictTone = a.meetsThreshold === null ? "neutral" : a.meetsThreshold ? "ok" : "warn";
   const recent = useMemo(() => a.recentFalls ?? [], [a.recentFalls]);
@@ -127,16 +127,16 @@ export function FallSection({ analysis: a, timeZone }: { analysis: FallAnalysis;
             <Stat label="Acknowledged at" value={a.acknowledgedAt ? formatDateTime(a.acknowledgedAt, timeZone, true) : "—"} tone={slowTone(a.acknowledgedSeconds)} hint={slowHint(a.acknowledgedSeconds)} />
             <Stat label="Resolved at" value={a.resolution.completedAt ? formatDateTime(a.resolution.completedAt, timeZone, true) : "—"} tone={slowTone(a.resolution.completedSeconds)} hint={slowHint(a.resolution.completedSeconds) ?? "Completed at"} />
             <Stat
-              label="Time to all-zero packet"
+              label="Time to fall bit clear"
               value={a.resolution.seconds === null ? "—" : formatSeconds(a.resolution.seconds)}
               tone={a.resolution.exceededLimit || a.resolution.status !== "RESOLVED" ? "warn" : "ok"}
               hint={
                 a.resolution.exceededLimit
                   ? "Took longer than 3 hours"
                   : a.resolution.status === "RESOLVED"
-                    ? `Alert start to the first all-zero alertBit packet, at ${formatDateTime(a.resolution.resolvedAt, timeZone, true)}`
+                    ? `Alert start to the first packet with the fall bit clear, at ${formatDateTime(a.resolution.resolvedAt, timeZone, true)}`
                     : a.resolution.status === "NOT_FOUND"
-                      ? "No all-zero packet found yet"
+                      ? "No packet with the fall bit clear found yet"
                       : a.resolution.status === "NO_FLAG"
                         ? "No flagged packet at the alert start"
                         : "Sensor data unavailable"
@@ -214,11 +214,11 @@ export function FallSection({ analysis: a, timeZone }: { analysis: FallAnalysis;
       )}
 
       <Card
-        title="Falls in the last 30 days"
+        title={`Falls in ${month}`}
         aside={`Total: ${recent.length}${a.dayNight ? ` · Day: ${a.dayNight.day} · Night: ${a.dayNight.night}` : ""}`}
       >
         {recent.length === 0 ? (
-          <p className="text-sm text-muted">No other falls for this resident in the 30 days up to this alert.</p>
+          <p className="text-sm text-muted">No other falls for this resident in {month}.</p>
         ) : (
           <>
             <div className="overflow-x-auto">

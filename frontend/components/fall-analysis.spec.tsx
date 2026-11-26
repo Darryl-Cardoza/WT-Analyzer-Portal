@@ -46,7 +46,7 @@ const base: FallAnalysis = {
   acknowledgedSeconds: 11,
   notes: [],
 };
-const show = (over: Partial<FallAnalysis> = {}) => render(<FallSection analysis={{ ...base, ...over }} timeZone={TZ} />);
+const show = (over: Partial<FallAnalysis> = {}) => render(<FallSection analysis={{ ...base, ...over }} timeZone={TZ} month="November 2026" />);
 const stat = (label: string) => screen.getByText(label).parentElement!;
 const packet = (i: number, over: Partial<FallPacket> = {}): FallPacket => ({
   category: "ALERT",
@@ -133,28 +133,28 @@ describe("FallSection: location and map", () => {
 });
 
 describe("FallSection: resolution", () => {
-  it("shows the resolution time, acknowledgement and resolved-at times and the all-zero packet time", () => {
+  it("shows the resolution time, acknowledgement and resolved-at times and the fall-bit-clear packet time", () => {
     show();
     expect(stat("Resolution time").textContent).toContain("41s");
     expect(stat("Acknowledged at").textContent).toContain("Nov 11, 1:24:40 PM");
     expect(stat("Resolved at").textContent).toContain("Nov 11, 1:25:10 PM");
-    expect(stat("Time to all-zero packet").textContent).toContain("1m 58s");
-    expect(stat("Time to all-zero packet").textContent).toContain("Alert start to the first all-zero alertBit packet");
+    expect(stat("Time to fall bit clear").textContent).toContain("1m 58s");
+    expect(stat("Time to fall bit clear").textContent).toContain("Alert start to the first packet with the fall bit clear");
   });
 
   it.each([
-    ["NOT_FOUND", { seconds: null, resolvedAt: null }, "No all-zero packet found yet"],
+    ["NOT_FOUND", { seconds: null, resolvedAt: null }, "No packet with the fall bit clear found yet"],
     ["NO_FLAG", { seconds: null, resolvedAt: null }, "No flagged packet at the alert start"],
     ["UNAVAILABLE", { seconds: null, resolvedAt: null }, "Sensor data unavailable"],
   ] as const)("%s explains itself", (status, over, hint) => {
     show({ resolution: { ...base.resolution!, status, ...over } });
-    expect(stat("Time to all-zero packet").textContent).toContain(hint);
-    expect(stat("Time to all-zero packet").textContent).toContain("—");
+    expect(stat("Time to fall bit clear").textContent).toContain(hint);
+    expect(stat("Time to fall bit clear").textContent).toContain("—");
   });
 
   it("flags a resolution over 3 hours", () => {
     show({ resolution: { ...base.resolution!, seconds: 4 * 3600, exceededLimit: true } });
-    expect(stat("Time to all-zero packet").textContent).toContain("Took longer than 3 hours");
+    expect(stat("Time to fall bit clear").textContent).toContain("Took longer than 3 hours");
   });
 
   it("warns when the alert has no completed-at time", () => {
@@ -222,7 +222,7 @@ describe("FallSection: packets table", () => {
   });
 });
 
-describe("FallSection: falls in the last 30 days", () => {
+describe("FallSection: falls in the alert's month", () => {
   it("says so when there are none", () => {
     show({ recentFalls: [] });
     expect(screen.getByText(/No other falls for this resident/)).toBeTruthy();
@@ -238,7 +238,7 @@ describe("FallSection: falls in the last 30 days", () => {
       ],
     });
     expect(screen.getByText("Total: 3")).toBeTruthy();
-    const table = screen.getByRole("heading", { name: "Falls in the last 30 days" }).closest("section")!;
+    const table = screen.getByRole("heading", { name: "Falls in November 2026" }).closest("section")!;
     const rows = within(table).getAllByRole("row").slice(1);
     const cells = (r: HTMLElement) => within(r).getAllByRole("cell").map((c) => c.textContent);
     expect(cells(rows[0]).slice(0, 8)).toEqual(["Nov 1, 12:00 PM", "Day", "Hard", "95%", "False positive", "Sat down hard", "1m 0s", "Nov 1, 12:05 PM"]);

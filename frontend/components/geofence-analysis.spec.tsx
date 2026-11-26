@@ -64,7 +64,7 @@ const base: GeofenceAnalysis = {
   isFalsePositive: null,
   notes: [],
 };
-const show = (over: Partial<GeofenceAnalysis> = {}) => render(<GeofenceSection analysis={{ ...base, ...over }} timeZone={TZ} />);
+const show = (over: Partial<GeofenceAnalysis> = {}) => render(<GeofenceSection analysis={{ ...base, ...over }} timeZone={TZ} month="November 2026" />);
 const stat = (label: string) => screen.getByText(label).parentElement!;
 
 describe("GeofenceSection: movement analysis", () => {

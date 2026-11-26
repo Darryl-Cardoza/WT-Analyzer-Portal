@@ -5,6 +5,11 @@ export function todayIn(timeZone: string, now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 }
 
+/** "November 2026": the calendar month of a time in a zone. The history cards cover the alert's month in the SITE's zone. */
+export function formatMonth(value: string | Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-US", { timeZone, month: "long", year: "numeric" }).format(new Date(value));
+}
+
 /**
  * "Nov 11, 1:24 PM" in the given zone ("Nov 11, 1:24:29 PM" with `seconds`, for GPS fixes).
  * Newer ICU puts a narrow no-break space before PM, so it is normalised. UTC times end in " UTC" so they are never
