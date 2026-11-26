@@ -71,3 +71,72 @@ export function searchAlerts(params: { email?: string; date?: string; time?: str
   for (const [key, value] of Object.entries(params)) if (value) query.set(key, value);
   return apiFetch<SearchResponse>(`/alerts?${query}`);
 }
+
+export interface FallProfile {
+  softFallProbability: number | null;
+  hardFallProbability: number | null;
+}
+
+/** The admin's own site and its settings (read-only). A value the site has not set is null. */
+export interface SiteSettings {
+  site: { id: string; name: string | null; timeZone: string };
+  settings: {
+    timeDifferenceThreshold: number | null;
+    batteryThreshold: number | null;
+    firstPacketDetection: boolean | null;
+    deviceSwitching: number | null;
+    acknowledgeWaitTime: number | null;
+    distanceThreshold: number | null;
+    hdopThreshold: number | null;
+    hdopUpperThreshold: number | null;
+    timeZone: string | null;
+    /** isDefault: the site has not set a window, so the default one applies. */
+    nightWindow: { startTime: string; endTime: string; isDefault: boolean };
+    showBatteryAlert: boolean | null;
+    fallProfiles: { high: FallProfile; medium: FallProfile; low: FallProfile };
+  };
+}
+
+export const getSiteSettings = () => apiFetch<SiteSettings>("/site-settings");
+
+/** POST JSON to a protected API route as the signed-in admin. Same session and error rules as apiFetch. Browser only. */
+export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  const token = getToken();
+  if (!token) throw new SessionError();
+
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { "x-access-token": token, "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (res.status === 401 || res.status === 403) {
+    clearToken();
+    throw new SessionError();
+  }
+  if (!res.ok) {
+    const err = (await res.json().catch(() => null)) as { message?: unknown } | null;
+    throw new ApiError(res.status, typeof err?.message === "string" ? err.message : `Request failed (${res.status})`);
+  }
+  return res.json() as Promise<T>;
+}
+
+/** The body of a settings update: any subset of the settings. */
+export type SiteSettingsChanges = {
+  [K in Exclude<keyof SiteSettings["settings"], "nightWindow" | "fallProfiles">]?: NonNullable<SiteSettings["settings"][K]>;
+} & {
+  nightWindow?: { startTime: string; endTime: string };
+  fallProfiles?: { [R in "high" | "medium" | "low"]?: Partial<{ softFallProbability: number; hardFallProbability: number }> };
+};
+
+/** Changes the given site settings (only the fields sent) and returns the settings as they are now. */
+export const saveSiteSettings = (changes: SiteSettingsChanges) => apiPost<SiteSettings>("/site-settings", changes);
+
+/** Fired when the site's /me answer is out of date (e.g. its time zone was changed), so what shows it can load it again. */
+export const ME_CHANGED = "analyzer:me-changed";
+
+/** Forget the cached /me answer, and tell the header (already on screen) to load the new one, so no page reload is needed. */
+export function clearMeCache() {
+  cachedMe = null;
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(ME_CHANGED));
+}

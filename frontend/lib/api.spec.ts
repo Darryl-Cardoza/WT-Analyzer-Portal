@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./session", () => ({ getToken: vi.fn(), clearToken: vi.fn() }));
 
-import { API_URL, ApiError, SessionError, apiFetch, getAlert, getMe, searchAlerts } from "./api";
+import { API_URL, ApiError, SessionError, apiFetch, apiPost, getAlert, getMe, searchAlerts } from "./api";
 import { clearToken, getToken } from "./session";
 
 const fetchMock = vi.fn();
@@ -133,5 +133,29 @@ describe("getMe cache", () => {
     as(null);
     await expect(getMe()).rejects.toBeInstanceOf(SessionError);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("apiPost", () => {
+  it("posts JSON with the token, never caches, and returns the JSON", async () => {
+    reply(200, { ok: true });
+    await expect(apiPost("/x", { a: 1 })).resolves.toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledWith(`${API_URL}/x`, {
+      method: "POST",
+      headers: { "x-access-token": "tok", "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+      body: JSON.stringify({ a: 1 }),
+      cache: "no-store",
+    });
+  });
+  it("needs a session, ends it on 401/403, and keeps the API's message for other errors", async () => {
+    vi.mocked(getToken).mockReturnValue(null);
+    await expect(apiPost("/x", {})).rejects.toBeInstanceOf(SessionError);
+    expect(fetchMock).not.toHaveBeenCalled();
+    vi.mocked(getToken).mockReturnValue("tok");
+    reply(403, {});
+    await expect(apiPost("/x", {})).rejects.toBeInstanceOf(SessionError);
+    expect(clearToken).toHaveBeenCalledTimes(1);
+    reply(400, { message: "batteryThreshold must be a number" });
+    expect(await apiPost("/x", {}).catch((e) => e)).toMatchObject({ status: 400, message: "batteryThreshold must be a number" });
   });
 });

@@ -1,16 +1,33 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ZoneToggle } from "@/components/zone-toggle";
-import { getMe } from "@/lib/api";
+import { ME_CHANGED, getMe } from "@/lib/api";
+import type { Me } from "@/lib/api";
 import { logout } from "@/lib/auth";
 import { siteZoneLabel } from "@/lib/timezone";
 import { useApi } from "@/lib/use-api";
 import { useZoneChoice } from "@/lib/zone-pref";
 
+// useApi needs a module-level loader; the version only exists to load /me again when it changes.
+const loadMe = (_version: number) => getMe();
+
 export function SiteHeader() {
   const { replace } = useRouter();
-  const { data: me } = useApi(getMe);
+  const [version, setVersion] = useState(0);
+  const { data } = useApi(loadMe, version);
+  const [lastMe, setLastMe] = useState<Me | null>(null);
+  // Site settings tells us when the site's zone changed: load /me again and show the new zone without a page reload.
+  useEffect(() => {
+    const again = () => setVersion((v) => v + 1);
+    window.addEventListener(ME_CHANGED, again);
+    return () => window.removeEventListener(ME_CHANGED, again);
+  }, []);
+  useEffect(() => {
+    if (data) setLastMe(data);
+  }, [data]);
+  const me = data ?? lastMe; // keep showing the old answer while the new one loads, so the header does not flash
   const choice = useZoneChoice();
   if (!me) return <SiteHeaderFallback />; // loading (an ended session is sent to the login page by useApi)
 

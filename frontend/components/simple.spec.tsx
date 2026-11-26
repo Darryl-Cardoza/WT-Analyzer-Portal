@@ -233,3 +233,17 @@ describe("static panels", () => {
     expect(within(document.body).getByText("Wear-Tech")).toBeTruthy();
   });
 });
+
+describe("SiteHeader: site zone changed elsewhere", () => {
+  it("loads /me again and shows the new zone, without a page reload", async () => {
+    vi.mocked(useZoneChoice).mockReturnValue("site");
+    vi.mocked(getMe).mockReset();
+    vi.mocked(getMe).mockResolvedValueOnce({ weartechUserId: "a@b.org", site: { id: "1", name: "Gordon Manor", timeZone: "Asia/Kolkata" } });
+    render(<SiteHeader />);
+    expect(await screen.findByText(/Asia\/Kolkata/)).toBeTruthy();
+    vi.mocked(getMe).mockResolvedValueOnce({ weartechUserId: "a@b.org", site: { id: "1", name: "Gordon Manor", timeZone: "America/Anchorage" } });
+    window.dispatchEvent(new Event("analyzer:me-changed"));
+    expect(await screen.findByText(/America\/Anchorage/)).toBeTruthy();
+    expect(screen.getByText("Gordon Manor")).toBeTruthy(); // the header stayed up while it reloaded
+  });
+});

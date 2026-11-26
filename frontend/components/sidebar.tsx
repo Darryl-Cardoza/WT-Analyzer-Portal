@@ -4,9 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
 
-// Alerts is the only page in v1; add entries here as pages are built.
+// Add an entry here for each page.
 // `active` also covers the alert detail page (/alert/), which belongs to the Alerts section.
-const NAV = [{ href: "/alerts/", label: "Alerts", active: (path: string) => /^\/alerts?(\/|$)/.test(path) }];
+const NAV = [
+  { href: "/alerts/", label: "Alerts", active: (path: string) => /^\/alerts?(\/|$)/.test(path) },
+  { href: "/site-settings/", label: "Site Settings", active: (path: string) => /^\/site-settings(\/|$)/.test(path) },
+];
 
 /** Reads the current URL, so the layout wraps it in <Suspense>. */
 export function Sidebar() {
